@@ -7,7 +7,7 @@ on:
 
 env:
   # Change this to your fork of typst/packages
-  REGISTRY_FORK: balouf/packages
+  REGISTRY_FORK: balouf/typst-packages
 
 jobs:
   publish:
