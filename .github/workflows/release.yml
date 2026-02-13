@@ -1,0 +1,78 @@
+name: Publish to Typst Universe
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  # Change this to your fork of typst/packages
+  REGISTRY_FORK: balouf/packages
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read package metadata
+        id: meta
+        run: |
+          NAME=$(grep '^name' typst.toml | head -1 | sed 's/.*= *"\(.*\)"/\1/')
+          VERSION=$(grep '^version' typst.toml | head -1 | sed 's/.*= *"\(.*\)"/\1/')
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          if [ "$TAG" != "${{ steps.meta.outputs.version }}" ]; then
+            echo "::error::Tag v$TAG does not match typst.toml version ${{ steps.meta.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Clone registry fork
+        run: |
+          git clone https://x-access-token:${{ secrets.REGISTRY_TOKEN }}@github.com/${{ env.REGISTRY_FORK }}.git registry
+          cd registry
+          git remote add upstream https://github.com/typst/packages.git
+          git fetch upstream main
+          git checkout -b ${{ steps.meta.outputs.name }}-${{ steps.meta.outputs.version }} upstream/main
+
+      - name: Copy package files
+        run: |
+          PKG_DIR="registry/packages/preview/${{ steps.meta.outputs.name }}/${{ steps.meta.outputs.version }}"
+          mkdir -p "$PKG_DIR"
+
+          # Copy package entrypoint and manifest
+          cp algotel.typ "$PKG_DIR/"
+          cp typst.toml "$PKG_DIR/"
+          cp LICENSE "$PKG_DIR/"
+          cp README.md "$PKG_DIR/"
+          cp thumbnail.png "$PKG_DIR/"
+          cp algotel-logo-bw-transparent.png "$PKG_DIR/"
+
+          # Copy template directory
+          cp -r template "$PKG_DIR/"
+
+      - name: Push branch to fork
+        run: |
+          cd registry
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Add ${{ steps.meta.outputs.name }}:${{ steps.meta.outputs.version }}"
+          git push -u origin ${{ steps.meta.outputs.name }}-${{ steps.meta.outputs.version }}
+
+      - name: Print instructions
+        run: |
+          echo "Branch pushed to ${{ env.REGISTRY_FORK }}."
+          echo ""
+          echo "Open a PR from:"
+          echo "  ${{ env.REGISTRY_FORK }}:${{ steps.meta.outputs.name }}-${{ steps.meta.outputs.version }}"
+          echo "to:"
+          echo "  typst/packages:main"
+          echo ""
+          echo "PR URL:"
+          echo "  https://github.com/typst/packages/compare/main...${{ env.REGISTRY_FORK }}:${{ steps.meta.outputs.name }}-${{ steps.meta.outputs.version }}?expand=1"
