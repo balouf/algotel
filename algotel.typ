@@ -275,7 +275,7 @@ proof-styling: algotel-proof-style
 
   // Paragraph (level 4): 10pt, bold, run-in style (inline with text)
   show heading.where(level: 4): it => {
-    v(0.6em)
+    block(spacing: 0.6em)[] // to prevent indentation of the next paragraph
     text(size: 10pt, weight: "bold")[#it.body.]
     h(0.5em)
   }
