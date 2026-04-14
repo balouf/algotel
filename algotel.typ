@@ -253,7 +253,8 @@ proof-styling: algotel-proof-style
   show heading.where(level: 1): it => {
     set text(font: heading-font, size: 14pt, weight: "regular")
     block(above: 1.4em, below: 0.75em)[
-      #counter(heading).display("1") #h(0.3em) #it.body
+      #if it.numbering != none { counter(heading).display("1") + h(0.3em) }
+      #it.body
     ]
   }
 
@@ -261,7 +262,8 @@ proof-styling: algotel-proof-style
   show heading.where(level: 2): it => {
     set text(font: heading-font, size: 12pt, weight: "regular", style: "italic")
     block(above: 1.2em, below: 0.65em)[
-      #counter(heading).display("1.1") #h(0.3em) #it.body
+      #if it.numbering != none { counter(heading).display("1.1") + h(0.3em) }
+      #it.body
     ]
   }
 
@@ -269,7 +271,8 @@ proof-styling: algotel-proof-style
   show heading.where(level: 3): it => {
     set text(font: heading-font, size: 12pt, weight: "regular", style: "italic")
     block(above: 1em, below: 0.55em)[
-      #counter(heading).display("1.1.1") #h(0.3em) #it.body
+      #if it.numbering != none { counter(heading).display("1.1.1") + h(0.3em) }
+      #it.body
     ]
   }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Fix headings ignoring `numbering: none`.
+- Adjust paragraph styling for level 4 headings.
+
 ## 0.1.0
 
 - Initial release.
